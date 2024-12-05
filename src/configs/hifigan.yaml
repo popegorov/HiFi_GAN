@@ -4,8 +4,8 @@ defaults:
   - mpd: mpd
   - writer: wandb
   - metrics: example
-  - datasets: kaggle
-  - dataloader: train
+  - datasets: lj_speech
+  - dataloader: onebatch
   - transforms: example_only_instance
   - _self_
 g_optimizer:
@@ -29,8 +29,8 @@ trainer:
   n_epochs: 3
   epoch_len: 4
   device_tensors: ["spectrogram", "audio"] # which tensors should be on device (ex. GPU)
-  resume_from: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/pytorch_project_template/saved/testing/checkpoint-epoch1.pth" # null or path to the checkpoint dir with *.pth and config.yaml
-  device: auto # device name or "auto"
+  resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
+  device: 'mps' # device name or "auto"
   override: True # if True, will override the previous run with the same name
   monitor: "min val_WER_(Argmax)" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
