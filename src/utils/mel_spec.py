@@ -28,7 +28,7 @@ class MelSpectrogram(nn.Module):
         super(MelSpectrogram, self).__init__()
 
         self.config = config
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         self.mel_spectrogram = torchaudio.transforms.MelSpectrogram(
             sample_rate=config.sr,
@@ -40,7 +40,7 @@ class MelSpectrogram(nn.Module):
             n_mels=config.n_mels,
             center=False,
             pad=(config.n_fft - config.hop_length) // 2
-        )
+        ).to(self.device)
 
         # The is no way to set power in constructor in 0.5.0 version.
         self.mel_spectrogram.spectrogram.power = config.power
@@ -62,7 +62,7 @@ class MelSpectrogram(nn.Module):
         :return: Shape is [B, n_mels, T']
         """
         
-        cur_audio = audio.to('cpu')
+        cur_audio = audio.to(self.device)
         mel = self.mel_spectrogram(cur_audio) \
             .clamp_(min=1e-5) \
             .log_()
