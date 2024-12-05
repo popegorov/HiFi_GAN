@@ -1,8 +1,8 @@
 _target_: src.logger.WandBWriter
-project_name: "pytorch_template_asr_example"
+project_name: "HiFi_GAN"
 entity: null
 run_name: "testing"
 mode: "online"
-loss_names: ["loss"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
+loss_names: ["MPD_discriminator loss", "MSD_discriminator loss", "MPD_generator loss", "MSD_generator loss", "MPD_feature loss", "MSD_feature loss", "MelSpectrogram loss", "Generator loss", "Discriminator loss"] # which losses to log (useful for multi-loss tasks, s.a. GANs)
 log_checkpoints: False # set to True if you want to log save_dir with checkpoints to W&B
 id_length: 8 # length of the run_id

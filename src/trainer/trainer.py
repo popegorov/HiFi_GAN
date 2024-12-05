@@ -1,12 +1,12 @@
 from pathlib import Path
 
 import pandas as pd
+import itertools
 
 from src.logger.utils import plot_spectrogram
 from src.metrics.tracker import MetricTracker
-from src.metrics.utils import calc_cer, calc_wer
+from src.loss.loss_utils import feature_loss, generator_loss, mel_spect_loss, discriminator_loss
 from src.trainer.base_trainer import BaseTrainer
-
 
 class Trainer(BaseTrainer):
     """
@@ -38,20 +38,62 @@ class Trainer(BaseTrainer):
         metric_funcs = self.metrics["inference"]
         if self.is_train:
             metric_funcs = self.metrics["train"]
-            self.optimizer.zero_grad()
+            self.d_optimizer.zero_grad()
 
-        outputs = self.model(**batch)
-        batch.update(outputs)
+        source_wav = batch['audio'].unsqueeze(1)
+        source_spec = batch['spectrogram']
+        generated_wav = self.generator(source_spec)
 
-        all_losses = self.criterion(**batch)
-        batch.update(all_losses)
+        mpd_real_out, mpd_gen_out, _, _ = self.mpd(source_wav, generated_wav.detach())
+
+        msd_real_out, msd_gen_out, _, _ = self.msd(source_wav, generated_wav.detach())
+
+        mpd_loss_d = discriminator_loss(mpd_real_out, mpd_gen_out)
+        msd_loss_d = discriminator_loss(msd_real_out, msd_gen_out)
+        d_loss = mpd_loss_d + msd_loss_d
 
         if self.is_train:
-            batch["loss"].backward()  # sum of all losses is always called loss
-            self._clip_grad_norm()
-            self.optimizer.step()
-            if self.lr_scheduler is not None:
-                self.lr_scheduler.step()
+            d_loss.backward()
+            self._clip_grad_norm(self.mpd)
+            self._clip_grad_norm(self.msd)
+            self.d_optimizer.step()
+            self.train_metrics.update("discriminator_grad_norm", self._get_grad_norm(itertools.chain(self.msd.parameters(), self.mpd.parameters())))
+            self.g_optimizer.zero_grad()
+
+        _, mpd_gen_out, mpd_real_features, mpd_gen_features = self.mpd(source_wav, generated_wav)
+        _, msd_gen_out, msd_real_features, msd_gen_features = self.msd(source_wav, generated_wav)
+
+        mpd_loss_g = generator_loss(mpd_gen_out)
+        msd_loss_g = generator_loss(msd_gen_out)
+
+        mel_spec_loss = mel_spect_loss(source_spec, self.mel_spec(generated_wav))
+
+        mpd_loss_f = feature_loss(mpd_real_features, mpd_gen_features)
+        msd_loss_f = feature_loss(msd_real_features, msd_gen_features)
+
+        g_loss = mpd_loss_g + msd_loss_g + mel_spec_loss + mpd_loss_f + msd_loss_f
+        
+        if self.is_train:
+            g_loss.backward()
+            self._clip_grad_norm(self.generator)
+            self.g_optimizer.step()
+            self.train_metrics.update("generator_grad_norm", self._get_grad_norm(self.generator.parameters()))
+            
+        
+        to_update = {
+            "MPD_discriminator loss" : mpd_loss_d,
+            "MSD_discriminator loss" : msd_loss_d,
+            "MPD_generator loss" : mpd_loss_g,
+            "MSD_generator loss" : msd_loss_g,
+            "MPD_feature loss" : mpd_loss_f / 2.0, # returning to real value
+            "MSD_feature loss" : msd_loss_f / 2.0, # returning to real value           
+            "MelSpectrogram loss" : mel_spec_loss / 45.0, # returning to real value
+            "Generator loss" : g_loss,
+            "Discriminator loss" : d_loss,
+            "generated_audio" : generated_wav.squeeze(1),
+        }
+
+        batch.update(to_update)
 
         # update metrics for each loss (in case of multiple losses)
         for loss_name in self.config.writer.loss_names:
@@ -77,12 +119,12 @@ class Trainer(BaseTrainer):
         # such as audio, text or images, for example
 
         # logging scheme might be different for different partitions
-        if mode == "train":  # the method is called only every self.log_step steps
-            self.log_spectrogram(**batch)
-        else:
-            # Log Stuff
-            self.log_spectrogram(**batch)
-            self.log_predictions(**batch)
+        self.log_spectrogram(**batch)
+        self.log_audio(**batch)
+
+    def log_audio(self, audio, generated_audio, **batch):
+        self.writer.add_audio("source_audio", audio[0], 22050)
+        self.writer.add_audio("generated_audio", generated_audio[0], 22050)
 
     def log_spectrogram(self, spectrogram, **batch):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
@@ -92,32 +134,31 @@ class Trainer(BaseTrainer):
     def log_predictions(
         self, text, log_probs, log_probs_length, audio_path, examples_to_log=10, **batch
     ):
+        pass
         # TODO add beam search
         # Note: by improving text encoder and metrics design
         # this logging can also be improved significantly
 
-        argmax_inds = log_probs.cpu().argmax(-1).numpy()
-        argmax_inds = [
-            inds[: int(ind_len)]
-            for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
-        ]
-        argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
-        argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        # argmax_inds = log_probs.cpu().argmax(-1).numpy()
+        # argmax_inds = [
+        #     inds[: int(ind_len)]
+        #     for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
+        # ]
+        # tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
 
-        rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
-            target = self.text_encoder.normalize_text(target)
-            wer = calc_wer(target, pred) * 100
-            cer = calc_cer(target, pred) * 100
+        # rows = {}
+        # for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
 
-            rows[Path(audio_path).name] = {
-                "target": target,
-                "raw prediction": raw_pred,
-                "predictions": pred,
-                "wer": wer,
-                "cer": cer,
-            }
-        self.writer.add_table(
-            "predictions", pd.DataFrame.from_dict(rows, orient="index")
-        )
+        #     wer = calc_wer(target, pred) * 100
+        #     cer = calc_cer(target, pred) * 100
+
+        #     rows[Path(audio_path).name] = {
+        #         "target": target,
+        #         "raw prediction": raw_pred,
+        #         "predictions": pred,
+        #         "wer": wer,
+        #         "cer": cer,
+        #     }
+        # self.writer.add_table(
+        #     "predictions", pd.DataFrame.from_dict(rows, orient="index")
+        # )

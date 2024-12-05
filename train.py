@@ -1,5 +1,6 @@
 import warnings
 
+import itertools
 import hydra
 import torch
 from hydra.utils import instantiate
@@ -12,7 +13,7 @@ from src.utils.init_utils import set_random_seed, setup_saving_and_logging
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
-@hydra.main(version_base=None, config_path="src/configs", config_name="baseline")
+@hydra.main(version_base=None, config_path="src/configs", config_name="hifigan")
 def main(config):
     """
     Main script for training. Instantiates the model, optimizer, scheduler,
@@ -33,44 +34,51 @@ def main(config):
     else:
         device = config.trainer.device
 
-    # setup text_encoder
-    text_encoder = instantiate(config.text_encoder)
 
     # setup data_loader instances
     # batch_transforms should be put on device
-    dataloaders, batch_transforms = get_dataloaders(config, text_encoder, device)
+    dataloaders, batch_transforms = get_dataloaders(config, device)
 
     # build model architecture, then print to console
-    model = instantiate(config.model, n_tokens=len(text_encoder)).to(device)
-    logger.info(model)
+    generator = instantiate(config.generator).to(device)
+    mpd = instantiate(config.mpd).to(device)
+    msd = instantiate(config.msd).to(device)
 
-    # get function handles of loss and metrics
-    loss_function = instantiate(config.loss_function).to(device)
+    logger.info(generator)
+    logger.info(mpd)
+    logger.info(msd)
 
+
+    # get function handles of loss and metri
     metrics = {"train": [], "inference": []}
     for metric_type in ["train", "inference"]:
         for metric_config in config.metrics.get(metric_type, []):
-            # use text_encoder in metrics
             metrics[metric_type].append(
-                instantiate(metric_config, text_encoder=text_encoder)
+                instantiate(metric_config)
             )
 
     # build optimizer, learning rate scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = instantiate(config.optimizer, params=trainable_params)
-    lr_scheduler = instantiate(config.lr_scheduler, optimizer=optimizer)
+    trainable_generator_params = filter(lambda p: p.requires_grad, generator.parameters())
+    g_optimizer = instantiate(config.g_optimizer, params=trainable_generator_params)
+    trainable_discriminator_params = filter(lambda p: p.requires_grad, itertools.chain(msd.parameters(), mpd.parameters()))
+    d_optimizer = instantiate(config.d_optimizer, params=trainable_discriminator_params)
+    g_lr_scheduler = instantiate(config.g_lr_scheduler, optimizer=g_optimizer)
+    d_lr_scheduler = instantiate(config.d_lr_scheduler, optimizer=d_optimizer)
+
 
     # epoch_len = number of iterations for iteration-based training
     # epoch_len = None or len(dataloader) for epoch-based training
     epoch_len = config.trainer.get("epoch_len")
 
     trainer = Trainer(
-        model=model,
-        criterion=loss_function,
+        generator=generator,
+        mpd=mpd,
+        msd=msd,
         metrics=metrics,
-        optimizer=optimizer,
-        lr_scheduler=lr_scheduler,
-        text_encoder=text_encoder,
+        g_optimizer=g_optimizer,
+        d_optimizer=d_optimizer,
+        g_lr_scheduler=g_lr_scheduler,
+        d_lr_scheduler=d_lr_scheduler,
         config=config,
         device=device,
         dataloaders=dataloaders,
