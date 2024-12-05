@@ -58,6 +58,7 @@ class BaseDataset(Dataset):
         self.target_sr = target_sr
         self.instance_transforms = instance_transforms
         self.mel_spec = MelSpectrogram(MelSpectrogramConfig())
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     def __getitem__(self, ind):
         """
@@ -79,7 +80,7 @@ class BaseDataset(Dataset):
         audio_len = data_dict["audio_len"]
         audio = self.load_audio(audio_path)
 
-        spectrogram = self.mel_spec(audio)
+        spectrogram = self.mel_spec(audio.to(self.device))
 
         instance_data = {
             "audio": audio,
