@@ -62,7 +62,7 @@ class MelSpectrogram(nn.Module):
         :return: Shape is [B, n_mels, T']
         """
         
-        cur_audio = audio.to(self.device)
+        cur_audio = audio.to('cuda' if torch.cuda.is_available() else 'cpu')
         mel = self.mel_spectrogram(cur_audio) \
             .clamp_(min=1e-5) \
             .log_()
