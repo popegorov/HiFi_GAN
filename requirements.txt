@@ -15,6 +15,5 @@ black
 isort
 pre-commit
 wget
-itertools
 transfromers
 pytorch_lightning
