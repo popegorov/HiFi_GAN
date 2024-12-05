@@ -61,8 +61,9 @@ class MelSpectrogram(nn.Module):
         :param audio: Expected shape is [B, T]
         :return: Shape is [B, n_mels, T']
         """
-
-        mel = self.mel_spectrogram(audio) \
+        
+        cur_audio = audio.to('cpu')
+        mel = self.mel_spectrogram(cur_audio) \
             .clamp_(min=1e-5) \
             .log_()
 
