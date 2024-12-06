@@ -81,7 +81,9 @@ class Wav2Vec2MOS(nn.Module):
         if cuda:
             self.cuda()
         self.processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base")
-        self.resempler = T.Resample(orig_freq=22050, new_freq=16000).to('cuda')
+        self.resempler = T.Resample(orig_freq=22050, new_freq=16000)
+        if cuda:
+            self.resempler = self.resempler.to('cuda')
         
     def forward(self, x):
         x = self.encoder(x)['last_hidden_state'] # [Batch, time, feats]
@@ -119,10 +121,11 @@ class Wav2Vec2MOS(nn.Module):
             res = self.forward(x).mean()
         return res.cpu().item()
 
-    def calculate_batch(self, generated_audio):
+    def calculate_batch(self, generated_audio, audio_len):
         pred_mos = []
         for i in range(len(generated_audio)):
-            signal = self.resempler(generated_audio[i])
+            length = audio_len[i]
+            signal = self.resempler(generated_audio[i, :length])
             x = self.processor(signal, return_tensors="pt", padding=True, sampling_rate=16000).input_values
             if self.cuda_flag:
                 x = x.cuda()

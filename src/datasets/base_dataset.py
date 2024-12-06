@@ -27,6 +27,8 @@ class BaseDataset(Dataset):
         max_audio_length=None,
         shuffle_index=False,
         instance_transforms=None,
+        crop=False, 
+        len_to_crop=25600,
     ):
         """
         Args:
@@ -58,6 +60,8 @@ class BaseDataset(Dataset):
         self.target_sr = target_sr
         self.instance_transforms = instance_transforms
         self.mel_spec = MelSpectrogram(MelSpectrogramConfig())
+        self.crop = crop
+        self.len_to_crop = len_to_crop
 
     def __getitem__(self, ind):
         """
@@ -78,6 +82,9 @@ class BaseDataset(Dataset):
         audio_path = data_dict["path"]
         audio_len = data_dict["audio_len"]
         audio = self.load_audio(audio_path)
+        if self.crop and audio_len > self.len_to_crop:
+            audio = audio[:, :self.len_to_crop]
+            audio_len = self.len_to_crop
 
         spectrogram = self.mel_spec(audio)
 

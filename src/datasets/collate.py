@@ -27,7 +27,7 @@ def collate_fn(dataset_items: list[dict]):
 
     batch['audio'] = torch.nn.utils.rnn.pad_sequence(audios, batch_first=True)
     batch['audio'] = torch.transpose(batch['audio'], 1, 2).squeeze(1)
-    batch['spectrogram'] = torch.nn.utils.rnn.pad_sequence(spectrograms, batch_first=True)
+    batch['spectrogram'] = torch.nn.utils.rnn.pad_sequence(spectrograms, batch_first=True, padding_value=-11.5129251)
     batch['spectrogram'] = torch.transpose(batch['spectrogram'], 1, 3).squeeze(1)
     batch['audio'] = batch['audio'][:, :batch['spectrogram'].shape[-1] * 256]
     batch['paths'] = paths

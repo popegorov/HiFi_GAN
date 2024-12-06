@@ -122,9 +122,9 @@ class Trainer(BaseTrainer):
         self.log_spectrogram(**batch)
         self.log_audio(**batch)
 
-    def log_audio(self, audio, generated_audio, **batch):
-        self.writer.add_audio("source_audio", audio[0], 22050)
-        self.writer.add_audio("generated_audio", generated_audio[0], 22050)
+    def log_audio(self, audio, generated_audio, audio_len, **batch):
+        self.writer.add_audio("source_audio", audio[0][:audio_len[0]], 22050)
+        self.writer.add_audio("generated_audio", generated_audio[0][:audio_len[0]], 22050)
 
     def log_spectrogram(self, spectrogram, **batch):
         spectrogram_for_plot = spectrogram[0].detach().cpu()

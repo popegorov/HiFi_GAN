@@ -4,7 +4,7 @@ defaults:
   - mpd: mpd
   - writer: wandb
   - metrics: hifi_gan
-  - datasets: lj_speech
+  - datasets: kaggle
   - dataloader: onebatch
   - transforms: example_only_instance
   - _self_
@@ -25,14 +25,14 @@ d_lr_scheduler:
   step_size: 1
   gamma: 0.999
 trainer:
-  log_step: 2
-  n_epochs: 35
-  epoch_len: 4
+  log_step: 50
+  n_epochs: 70
+  epoch_len: 200
   device_tensors: ["spectrogram", "audio"] # which tensors should be on device (ex. GPU)
-  resume_from: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/pytorch_project_template/saved/testing/model_best.pth" # null or path to the checkpoint dir with *.pth and config.yaml
+  resume_from: "/kaggle/input/first-checkpoint/model_best.pth" # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: True # if True, will override the previous run with the same name
-  monitor: "min val_WER_(Argmax)" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
+  monitor: "max MOSMetric_val" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric
   save_period: 5 # checkpoint each save_period epochs in addition to the best epoch
   early_stop: ${trainer.n_epochs} # epochs for early stopping
   save_dir: "saved"

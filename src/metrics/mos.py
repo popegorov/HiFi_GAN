@@ -7,5 +7,5 @@ class MOSMetric(BaseMetric):
         super().__init__(name, args, kwargs)
         self.mos_calcer = get_wvmos(cuda=torch.cuda.is_available())
 
-    def __call__(self, generated_audio, **batch):
-        return self.mos_calcer.calculate_batch(generated_audio=generated_audio)
+    def __call__(self, generated_audio, audio_len, **batch):
+        return self.mos_calcer.calculate_batch(generated_audio=generated_audio, audio_len=audio_len)

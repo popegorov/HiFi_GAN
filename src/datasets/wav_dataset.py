@@ -21,4 +21,4 @@ class WavDataset(BaseDataset):
 
     def _calculate_length(self, audio_path: Path) -> float:
         audio_info = torchaudio.info(str(audio_path))
-        return audio_info.num_frames / audio_info.sample_rate
+        return audio_info.num_frames
