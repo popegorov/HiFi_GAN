@@ -98,7 +98,7 @@ class BaseDataset(Dataset):
         # TODO think of how to apply wave augs before calculating spectrogram
         # Note: you may want to preserve both audio in time domain and
         # in time-frequency domain for logging
-        instance_data = self.preprocess_data(instance_data)
+        # instance_data = self.preprocess_data(instance_data)
 
         return instance_data
 

@@ -5,7 +5,7 @@ from torch.nn.utils import spectral_norm, weight_norm
 import torch
 import torch.nn.functional as F
 
-class DiscriminatorS(nn.Module):
+class ScaleSubDiscriminator(nn.Module):
     def __init__(self, use_spectral_norm=False):
         super().__init__()
         normalization = spectral_norm if use_spectral_norm else weight_norm
@@ -64,9 +64,9 @@ class MultiScaleDiscriminator(nn.Module):
     def __init__(self):
         super().__init__()
         self.discriminators = nn.Sequential(*[
-            DiscriminatorS(use_spectral_norm=True),
-            DiscriminatorS(),
-            DiscriminatorS(),
+            ScaleSubDiscriminator(use_spectral_norm=True),
+            ScaleSubDiscriminator(),
+            ScaleSubDiscriminator(),
         ])
         self.meanpools = nn.Sequential(*[
             nn.AvgPool1d(4, 2, padding=1),

@@ -236,9 +236,10 @@ class BaseTrainer:
             if batch_idx % self.log_step == 0:
                 self.writer.set_step((epoch - 1) * self.epoch_len + batch_idx)
                 self.logger.debug(
-                    "Train Epoch: {} {} Generator loss: {:.6f} Discriminator Loss: {:.6f}".format(
-                        epoch, self._progress(batch_idx), batch["Generator loss"].item(),
-                        batch["Discriminator loss"].item()
+                    "\nTrain Epoch: {} {} Generator loss: {:.6f} Discriminator Loss: {:.6f}".format(
+                        epoch, self._progress(batch_idx), 
+                        batch["Generator loss"].item(),
+                        batch["Discriminator loss"].item(),
                     )
                 )
                 self.writer.add_scalar(

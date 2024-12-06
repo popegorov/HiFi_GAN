@@ -6,7 +6,7 @@ import torch
 import torch.nn.functional as F
 
 
-class DiscriminatorP(nn.Module):
+class PeriodSubDiscriminator(nn.Module):
     def __init__(self, period, kernel_size=5, stride=3):
         super().__init__()
         self.period = period
@@ -61,7 +61,11 @@ class DiscriminatorP(nn.Module):
         batch_size, num_channels, seq_length = audio.shape
         if seq_length % self.period != 0:
             to_pad = self.period - (seq_length % self.period)
-            audio = F.pad(audio, (0, to_pad), "reflect")
+            audio = F.pad(
+                input=audio, 
+                pad=(0, to_pad), 
+                mode="reflect",
+            )
             seq_length = seq_length + to_pad
         x = audio.view(batch_size, num_channels, seq_length // self.period, self.period)
 
@@ -78,7 +82,7 @@ class DiscriminatorP(nn.Module):
 class MultiPeriodDiscriminator(nn.Module):
     def __init__(self, periods=[2, 3, 5, 7, 11]):
         super().__init__()
-        layers = [DiscriminatorP(p) for p in periods]
+        layers = [PeriodSubDiscriminator(p) for p in periods]
         self.discriminators = nn.Sequential(*layers)
 
     def forward(self, y_real, y_generated):

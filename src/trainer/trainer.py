@@ -43,6 +43,7 @@ class Trainer(BaseTrainer):
         source_wav = batch['audio'].unsqueeze(1)
         source_spec = batch['spectrogram']
         generated_wav = self.generator(source_spec)
+        generated_spec = self.mel_spec(generated_wav.squeeze(1))
 
         mpd_real_out, mpd_gen_out, _, _ = self.mpd(source_wav, generated_wav.detach())
 
@@ -66,7 +67,9 @@ class Trainer(BaseTrainer):
         mpd_loss_g = generator_loss(mpd_gen_out)
         msd_loss_g = generator_loss(msd_gen_out)
 
-        mel_spec_loss = mel_spect_loss(source_spec, self.mel_spec(generated_wav))
+
+        mel_spec_loss = mel_spect_loss(source_spec, generated_spec)
+
 
         mpd_loss_f = feature_loss(mpd_real_features, mpd_gen_features)
         msd_loss_f = feature_loss(msd_real_features, msd_gen_features)
@@ -91,6 +94,7 @@ class Trainer(BaseTrainer):
             "Generator loss" : g_loss,
             "Discriminator loss" : d_loss,
             "generated_audio" : generated_wav.squeeze(1),
+            "generated_spectrogram" : generated_spec,
         }
 
         batch.update(to_update)
@@ -126,10 +130,14 @@ class Trainer(BaseTrainer):
         self.writer.add_audio("source_audio", audio[0][:audio_len[0]], 22050)
         self.writer.add_audio("generated_audio", generated_audio[0][:audio_len[0]], 22050)
 
-    def log_spectrogram(self, spectrogram, **batch):
+    def log_spectrogram(self, spectrogram, generated_spectrogram, **batch):
         spectrogram_for_plot = spectrogram[0].detach().cpu()
         image = plot_spectrogram(spectrogram_for_plot)
-        self.writer.add_image("spectrogram", image)
+        self.writer.add_image("source_spectrogram", image)
+
+        gen_spectrogram_for_plot = generated_spectrogram[0].detach().cpu()
+        gen_image = plot_spectrogram(gen_spectrogram_for_plot)
+        self.writer.add_image("generated_spectrogram", gen_image)
 
     def log_predictions(
         self, text, log_probs, log_probs_length, audio_path, examples_to_log=10, **batch
