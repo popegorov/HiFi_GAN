@@ -150,7 +150,7 @@ class BaseTrainer:
         if config.trainer.get("from_pretrained") is not None:
             self._from_pretrained(config.trainer.get("from_pretrained"))
         
-        self.mel_spec = MelSpectrogram(MelSpectrogramConfig)
+        self.mel_spec = MelSpectrogram(MelSpectrogramConfig, device=device)
 
     def train(self):
         """

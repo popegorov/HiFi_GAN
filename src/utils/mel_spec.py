@@ -24,11 +24,11 @@ class MelSpectrogramConfig:
 
 
 class MelSpectrogram(nn.Module):
-    def __init__(self, config: MelSpectrogramConfig):
+    def __init__(self, config: MelSpectrogramConfig, device='cpu'):
         super(MelSpectrogram, self).__init__()
 
         self.config = config
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device(device)
 
         self.mel_spectrogram = torchaudio.transforms.MelSpectrogram(
             sample_rate=config.sr,
