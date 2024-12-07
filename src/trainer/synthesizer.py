@@ -151,7 +151,7 @@ class Synthesizer(BaseTrainer):
 
         for i, path in enumerate(batch['paths']):
             
-            synthesized = batch['generated_audio'][i].clone().cpu().numpy()
+            synthesized = batch['generated_audio'][i].clone().cpu().numpy()[:batch['audio_len'][i]]
             output = path.stem
 
             if self.save_path is not None:

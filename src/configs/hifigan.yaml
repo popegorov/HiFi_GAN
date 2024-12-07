@@ -5,7 +5,7 @@ defaults:
   - writer: wandb
   - metrics: hifi_gan
   - datasets: lj_speech
-  - dataloader: onebatch
+  - dataloader: train
   - transforms: example_only_instance
   - _self_
 g_optimizer:

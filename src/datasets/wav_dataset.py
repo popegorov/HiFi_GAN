@@ -1,6 +1,7 @@
 from pathlib import Path
 from src.datasets.base_dataset import BaseDataset
 from tqdm import tqdm
+import torch
 import torchaudio
 
 class WavDataset(BaseDataset):
@@ -40,11 +41,10 @@ class WavDataset(BaseDataset):
         """
         data_dict = self._index[ind]
         audio_path = data_dict["path"]
-        audio_len = data_dict["audio_len"]
         audio = self.load_audio(audio_path)
-        if self.crop and audio_len > self.len_to_crop:
-            audio = audio[:, :self.len_to_crop]
-            audio_len = self.len_to_crop
+        if self.crop and audio.shape[1] > self.len_to_crop:
+            start = int(torch.randint(0, audio.shape[1] - self.len_to_crop, (1,))[0])
+            audio = audio[:, start: start + self.len_to_crop]
 
         spectrogram = self.mel_spec(audio)
 
@@ -52,7 +52,7 @@ class WavDataset(BaseDataset):
             "audio": audio,
             "spectrogram": spectrogram,
             "audio_path": audio_path,
-            "audio_len": audio_len,
+            "audio_len": audio.shape[1],
         }
 
         # TODO think of how to apply wave augs before calculating spectrogram
