@@ -29,7 +29,7 @@ trainer:
   n_epochs: 70
   epoch_len: 200
   device_tensors: ["spectrogram", "audio"] # which tensors should be on device (ex. GPU)
-  resume_from: "/kaggle/input/first-checkpoint/model_best.pth" # null or path to the checkpoint dir with *.pth and config.yaml
+  resume_from: null # null or path to the checkpoint dir with *.pth and config.yaml
   device: auto # device name or "auto"
   override: True # if True, will override the previous run with the same name
   monitor: "max val_MOSMetric" # "off" or "max/min metric_name", i.e. our goal is to maximize/minimize metric

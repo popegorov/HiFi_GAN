@@ -1,0 +1,4 @@
+val:
+  _target_: src.datasets.WavDataset
+  wav_dir: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/validation"
+  instance_transforms: ${transforms.instance_transforms.train} 

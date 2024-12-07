@@ -1,0 +1,6 @@
+defaults:
+  - _self_
+vars:
+  tokenizer_link: "https://drive.google.com/file/d/1W0T52SlXWZDdMyQ_7a_4QQyh8DUZo8jE/view?usp=sharing"
+  model_link: "https://drive.google.com/file/d/1H5ABVYXaWxl_gjgMTmmSCjKBaFNTw8LZ/view?usp=sharing"
+  to_save: "tts"

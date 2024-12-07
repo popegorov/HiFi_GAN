@@ -1,0 +1,13 @@
+defaults:
+  - generator: generator
+  - metrics: hifi_gan
+  - datasets: synthesize # we do not want to run inference on training data
+  - dataloader: onebatch
+  - transforms: example_only_instance
+  - _self_
+inferencer:
+  device_tensors: ["spectrogram"] # which tensors should be on device (ex. GPU)
+  device: auto # device name or "auto"
+  save_path: "saved" # any name here, can be a dataset name
+  seed: 1
+  from_pretrained: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/pytorch_project_template/saved/checkpoint-epoch60.pth" # path to the pretrained model

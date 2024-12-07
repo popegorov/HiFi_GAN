@@ -8,7 +8,7 @@ import numpy as np
 from torch import nn
 import torchaudio.transforms as T
 import os
-import urllib.request
+
 
 path = ''
 if os.getcwd().split('/')[1] != 'kaggle':

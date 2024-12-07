@@ -1,0 +1,6 @@
+val:
+  _target_: src.datasets.CustomDirDataset
+  text_dir: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/texts"
+  tts_dir: "tts"
+  text: null
+  instance_transforms: ${transforms.instance_transforms.train} 

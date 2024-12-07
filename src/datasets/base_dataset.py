@@ -1,3 +1,5 @@
+from abc import abstractmethod
+
 import logging
 import random
 
@@ -62,7 +64,8 @@ class BaseDataset(Dataset):
         self.mel_spec = MelSpectrogram(MelSpectrogramConfig())
         self.crop = crop
         self.len_to_crop = len_to_crop
-
+        
+    @abstractmethod
     def __getitem__(self, ind):
         """
         Get element from the index, preprocess it, and combine it
@@ -78,29 +81,7 @@ class BaseDataset(Dataset):
             instance_data (dict): dict, containing instance
                 (a single dataset element).
         """
-        data_dict = self._index[ind]
-        audio_path = data_dict["path"]
-        audio_len = data_dict["audio_len"]
-        audio = self.load_audio(audio_path)
-        if self.crop and audio_len > self.len_to_crop:
-            audio = audio[:, :self.len_to_crop]
-            audio_len = self.len_to_crop
-
-        spectrogram = self.mel_spec(audio)
-
-        instance_data = {
-            "audio": audio,
-            "spectrogram": spectrogram,
-            "audio_path": audio_path,
-            "audio_len": audio_len,
-        }
-
-        # TODO think of how to apply wave augs before calculating spectrogram
-        # Note: you may want to preserve both audio in time domain and
-        # in time-frequency domain for logging
-        # instance_data = self.preprocess_data(instance_data)
-
-        return instance_data
+        raise NotImplementedError()
 
     def __len__(self):
         """

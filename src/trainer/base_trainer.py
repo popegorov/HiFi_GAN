@@ -586,7 +586,7 @@ class BaseTrainer:
             checkpoint.get("mpd_state_dict") is not None and \
                 checkpoint.get("msd_state_dict") is not None:
             self.generator.load_state_dict(checkpoint["g_state_dict"])
-            self.mpd.load_state_dict(checkpoint["mpd_state_dict"])
-            self.msd.load_state_dict(checkpoint["msd_state_dict"])
+            # self.mpd.load_state_dict(checkpoint["mpd_state_dict"])
+            # self.msd.load_state_dict(checkpoint["msd_state_dict"])
         else:
             self.model.load_state_dict(checkpoint)

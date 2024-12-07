@@ -2,7 +2,7 @@ from itertools import repeat
 
 from hydra.utils import instantiate
 
-from src.datasets.collate import collate_fn
+from src.datasets.collate import wav_collate_fn, text_collate_fn
 from src.utils.init_utils import set_worker_seed
 
 
@@ -43,7 +43,7 @@ def move_batch_transforms_to_device(batch_transforms, device):
                 transforms[transform_name] = transforms[transform_name].to(device)
 
 
-def get_dataloaders(config, device):
+def get_wav_dataloaders(config, device):
     """
     Create dataloaders for each of the dataset partitions.
     Also creates instance and batch transforms.
@@ -80,7 +80,7 @@ def get_dataloaders(config, device):
         partition_dataloader = instantiate(
             config.dataloader,
             dataset=dataset,
-            collate_fn=collate_fn,
+            collate_fn=wav_collate_fn,
             drop_last=(dataset_partition == "train"),
             shuffle=(dataset_partition == "train"),
             worker_init_fn=set_worker_seed,
@@ -88,3 +88,22 @@ def get_dataloaders(config, device):
         dataloaders[dataset_partition] = partition_dataloader
 
     return dataloaders, batch_transforms
+
+def get_text_dataloader(config):
+    dataloaders = {}
+
+    for dataset_partition in config.datasets.keys():
+        dataset = instantiate(config.datasets[dataset_partition])
+
+        partition_dataloader = instantiate(
+            config.dataloader,
+            dataset=dataset,
+            collate_fn=text_collate_fn,
+            drop_last=False,
+            shuffle=False,
+            worker_init_fn=set_worker_seed,
+        )
+        dataloaders[dataset_partition] = partition_dataloader
+
+    return dataloaders, None
+

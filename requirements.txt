@@ -17,3 +17,6 @@ pre-commit
 wget
 transformers
 pytorch_lightning
+
+gdown
+nltk
