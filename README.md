@@ -1,4 +1,4 @@
-# Automatic Speech Recognition (ASR) with PyTorch
+# Text to Speech (HiFi-GAN) with PyTorch
 
 <p align="center">
   <a href="#about">About</a> •
@@ -10,7 +10,7 @@
 
 ## About
 
-This repository contains a template for solving ASR task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
+This repository contains a template for solving TTS task with PyTorch. This template branch is a part of the [HSE DLA course](https://github.com/markovka17/dla) ASR homework. Some parts of the code are missing (or do not follow the most optimal design choices...) and students are required to fill these parts themselves (as well as writing their own models, etc.).
 
 See the task assignment [here](https://github.com/markovka17/dla/tree/2024/hw1_asr).
 
@@ -49,11 +49,6 @@ Follow these steps to install the project:
    pip install -r requirements.txt
    ```
 
-2. Install `pre-commit`:
-   ```bash
-   pre-commit install
-   ```
-
 ## How To Use
 
 To train a model, run the following command:
@@ -69,6 +64,14 @@ To run inference (evaluate the model or save predictions):
 ```bash
 python3 inference.py HYDRA_CONFIG_ARGUMENTS
 ```
+
+To run synthesize (evaluate the model or save predictions):
+
+```bash
+python3 synthesize.py HYDRA_CONFIG_ARGUMENTS
+```
+
+For more information read my [report](https://docs.google.com/document/d/1b56MzcDtR5BTjMtMVaTdje_3ikVwa_Lc/edit?usp=sharing&ouid=106208123325586501017&rtpof=true&sd=true) section Code
 
 ## Credits
 
