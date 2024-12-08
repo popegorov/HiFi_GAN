@@ -1,7 +1,7 @@
 import os
 import urllib.request
 
-path = os.path.join(os.path.expanduser('.'), ".cache/wv_mos/wv_mos.ckpt")
+path = os.path.join(os.path.expanduser('.'), ".cache/wv_mos.ckpt")
 
 
 if (not os.path.exists(path)):

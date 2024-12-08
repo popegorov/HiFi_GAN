@@ -10,4 +10,4 @@ inferencer:
   device: auto # device name or "auto"
   save_path: "saved" # any name here, can be a dataset name
   seed: 1
-  from_pretrained: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/pytorch_project_template/saved/checkpoint-epoch60.pth" # path to the pretrained model
+  from_pretrained: "/Users/legend/Desktop/Универ/4/DLA/new_hw3/pytorch_project_template/saved/checkpoint-epoch91-cropped.pth" # path to the pretrained model

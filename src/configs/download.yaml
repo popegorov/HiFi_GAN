@@ -1,0 +1,5 @@
+defaults:
+  - _self_
+vars:
+  link: "https://drive.google.com/file/d/1_53dKP_ilZc8MOlwG1jhkfznA1iutKZu/view?usp=sharing"
+  to_save: "best_generator"

@@ -8,13 +8,12 @@ import numpy as np
 from torch import nn
 import torchaudio.transforms as T
 import os
+from download_weights_mos import path
 
 
-path = ''
-if os.getcwd().split('/')[1] != 'kaggle':
-    path = os.path.join(os.path.expanduser('.'), ".cache/wv_mos/wav2vec2.ckpt")
-else:
+if os.getcwd().split('/')[1] == 'kaggle':
     path = "/kaggle/input/wav2vec/wav2vec2.ckpt"
+    
 
 def extract_prefix(prefix, weights):
     result = OrderedDict()
